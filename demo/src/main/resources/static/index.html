@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>KTP CRUD</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        input, select {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            width: 100%;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            background: #2563eb;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #111827;
+            color: white;
+            padding: 10px;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .btn-delete {
+            background: red;
+            padding: 6px 10px;
+            border-radius: 5px;
+        }
+
+        .btn-delete:hover {
+            background: darkred;
+        }
+
+        .btn-edit {
+            background: orange;
+            padding: 6px 10px;
+            border-radius: 5px;
+            margin-right: 5px;
+        }
+
+        .btn-edit:hover {
+            background: darkorange;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Tambah / Update Data KTP</h2>
+
+    <div class="grid">
+        <input id="nik" placeholder="NIK (16 digit)">
+        <input id="namaLengkap" placeholder="Nama Lengkap">
+
+        <input id="tempatLahir" placeholder="Tempat Lahir">
+        <input type="date" id="tanggalLahir">
+
+        <select id="jenisKelamin">
+            <option value="">Pilih Jenis Kelamin</option>
+            <option>Laki-laki</option>
+            <option>Perempuan</option>
+        </select>
+
+        <input id="golonganDarah" placeholder="Golongan Darah">
+
+        <input id="alamat" placeholder="Alamat">
+        <input id="rtRw" placeholder="RT/RW">
+
+        <input id="desa" placeholder="Desa">
+        <input id="kecamatan" placeholder="Kecamatan">
+
+        <input id="agama" placeholder="Agama">
+        <input id="statusPerkawinan" placeholder="Status Perkawinan">
+
+        <input id="pekerjaan" placeholder="Pekerjaan">
+        <input id="kewarganegaraan" placeholder="Kewarganegaraan">
+
+        <input id="berlakuHingga" placeholder="Berlaku Hingga">
+    </div>
+
+    <button id="btnSimpan" onclick="simpan()">Tambah Data</button>
+</div>
+
+<div class="card">
+    <h2>Data KTP</h2>
+    <table id="tbl"></table>
+</div>
+
+<script>
+    let editId = null;
+
+    // LOAD DATA
+    function load() {
+        $.get("/ktp", function(data) {
+            let html = `
+            <tr>
+                <th>NIK</th>
+                <th>Nama</th>
+                <th>TTL</th>
+                <th>JK</th>
+                <th>Alamat</th>
+                <th>Pekerjaan</th>
+                <th>Aksi</th>
+            </tr>`;
+
+            data.forEach(d => {
+                html += `
+                <tr>
+                    <td>${d.nik}</td>
+                    <td>${d.namaLengkap}</td>
+                    <td>${d.tempatLahir}, ${d.tanggalLahir}</td>
+                    <td>${d.jenisKelamin}</td>
+                    <td>${d.alamat}</td>
+                    <td>${d.pekerjaan}</td>
+                    <td>
+                        <button class="btn-edit" onclick='edit(${JSON.stringify(d)})'>✏️</button>
+                        <button class="btn-delete" onclick="hapus(${d.id})">🗑️</button>
+                    </td>
+                </tr>`;
+            });
+
+            $("#tbl").html(html);
+        });
+    }
+
+    // CLEAR FORM
+    function clearForm() {
+        $("input").val("");
+        $("select").val("");
+    }
+
+    // SIMPAN (CREATE + UPDATE)
+    function simpan() {
+        const data = {
+            nik: $("#nik").val(),
+            namaLengkap: $("#namaLengkap").val(),
+            tempatLahir: $("#tempatLahir").val(),
+            tanggalLahir: $("#tanggalLahir").val(),
+            jenisKelamin: $("#jenisKelamin").val(),
+            golonganDarah: $("#golonganDarah").val(),
+            alamat: $("#alamat").val(),
+            rtRw: $("#rtRw").val(),
+            desa: $("#desa").val(),
+            kecamatan: $("#kecamatan").val(),
+            agama: $("#agama").val(),
+            statusPerkawinan: $("#statusPerkawinan").val(),
+            pekerjaan: $("#pekerjaan").val(),
+            kewarganegaraan: $("#kewarganegaraan").val(),
+            berlakuHingga: $("#berlakuHingga").val()
+        };
+
+        if (editId == null) {
+            // CREATE
+            $.ajax({
+                url: "/ktp",
+                method: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function() {
+                    alert("✅ Data berhasil ditambahkan!");
+                    clearForm();
+                    load();
+                }
+            });
+        } else {
+            // UPDATE
+            $.ajax({
+                url: "/ktp/" + editId,
+                method: "PUT",
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function() {
+                    alert("✏️ Data berhasil diupdate!");
+                    clearForm();
+                    editId = null;
+                    $("#btnSimpan").text("Tambah Data");
+                    load();
+                }
+            });
+        }
+    }
+
+    // EDIT
+    function edit(data) {
+        $("#nik").val(data.nik);
+        $("#namaLengkap").val(data.namaLengkap);
+        $("#tempatLahir").val(data.tempatLahir);
+        $("#tanggalLahir").val(data.tanggalLahir);
+        $("#jenisKelamin").val(data.jenisKelamin);
+        $("#golonganDarah").val(data.golonganDarah);
+        $("#alamat").val(data.alamat);
+        $("#rtRw").val(data.rtRw);
+        $("#desa").val(data.desa);
+        $("#kecamatan").val(data.kecamatan);
+        $("#agama").val(data.agama);
+        $("#statusPerkawinan").val(data.statusPerkawinan);
+        $("#pekerjaan").val(data.pekerjaan);
+        $("#kewarganegaraan").val(data.kewarganegaraan);
+        $("#berlakuHingga").val(data.berlakuHingga);
+
+        editId = data.id;
+        $("#btnSimpan").text("Update Data");
+    }
+
+    // DELETE
+    function hapus(id) {
+        if(confirm("Yakin mau hapus data?")) {
+            $.ajax({
+                url: "/ktp/" + id,
+                method: "DELETE",
+                success: function() {
+                    alert("🗑️ Data berhasil dihapus!");
+                    load();
+                }
+            });
+        }
+    }
+
+    $(document).ready(load);
+</script>
+
+</body>
+</html>
