@@ -1,4 +1,5 @@
-TUTORIAL MENGGUNAKAN POSTMAN + LINK API
+TUTORIAL MENGGUNAKAN POSTMAN 
++ LINK API
 1. Buka Postman
 
 Klik New Request
@@ -75,4 +76,10 @@ Contoh:
 Lihat response di bagian bawah Postman!
 
 Dokumentasi
-1. Post 
+1. Post ![postPostman.png](postPostman.png)
+2. Get All ![getPostman.png](getPostman.png)
+3. Get by id ![getbyidPostman.png](getbyidPostman.png)
+4. Put ![putPostman.png](putPostman.png)
+5. Delete ![deletePostman.png](deletePostman.png)
+6. Tampilan CRUD KTP ![tampilan.png](tampilan.png)
+7. DataBase ![db.png](db.png)
